@@ -1,49 +1,64 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
+import React from 'react';
+import { FlatList, ActivityIndicator, Text, View } from 'react-native';
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+export default class FetchExample extends React.Component {
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+    constructor(props) {
+        super(props);
+        this.state = { isLoading: true }
+    }
 
-type Props = {};
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
-    );
-  }
+    componentDidMount() {
+        // return fetch('https://facebook.github.io/react-native/movies.json')
+        return fetch('http://services.orbitremit.io/partner/v1/payments', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/vnd.api+json',
+                'Content-Type': 'application/vnd.api+json',
+                'Authorization': 'Bearer T1JCSVRES0pMRzA4U0Q4VUtESUw6R1NHUzlHU0RHUzU3NTY=',
+                'apikey': 'rhnLKuE8Im1Qlc8uFA1owVba7YxFAEhe',
+            },
+            // body: JSON.stringify({
+            //   firstParam: 'yourValue',
+            //   secondParam: 'yourOtherValue',
+            // }),
+        })
+            .then((response) => response.json())
+            .then((responseJson) => {
+
+                this.setState({
+                    isLoading: false,
+                    dataSource: responseJson.data,
+                }, function () {
+                    // console.error(responseJson.data);
+                });
+
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+
+
+    render() {
+
+        if (this.state.isLoading) {
+            return (
+                <View style={{ flex: 1, padding: 50 }}>
+                    <ActivityIndicator />
+                </View>
+            )
+        }
+
+        return (
+            <View style={{ flex: 1, paddingTop: 50 }}>
+                <FlatList
+                    data={this.state.dataSource}
+                    renderItem={({ item }) => <Text>{item.id}, {item.type}</Text>}
+                    keyExtractor={({ id }, index) => id}
+                />
+            </View>
+        );
+    }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
